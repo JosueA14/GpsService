@@ -9,18 +9,20 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
 import cr.ac.gpsservice.MapsActivity
+import cr.ac.gpsservice.db.LocationDatabase
 import cr.ac.gpsservice.entity.Location
 
 class GpsService : IntentService("GpsService") {
 
     lateinit var  locationCallback: LocationCallback
     lateinit var fusedLocationClient : FusedLocationProviderClient
-    private val SOLICITA_GPS = 1
+    private lateinit var locationDatabase: LocationDatabase
 
     companion object {
         val gps = "com.example.gpsservice.GPS_EVENT"
     }
     override fun onHandleIntent(intent: Intent?) {
+        locationDatabase = LocationDatabase.getInstance(this)
         getLocation()
     }
 
@@ -48,12 +50,15 @@ class GpsService : IntentService("GpsService") {
                         location.latitude,
                         location.longitude)
 
-                    MapsActivity.locationDatabase.locationDao.insert(mLocation)
-
-                    var bcIntent = Intent()
-                    bcIntent.action = gps
+                    val bcIntent = Intent()
+                    bcIntent.action = GpsService.gps
                     bcIntent.putExtra("gps", mLocation)
                     sendBroadcast(bcIntent)
+
+                    MapsActivity.locationDatabase.locationDao.insert(Location(
+                        null,
+                        mLocation.latitude,
+                        mLocation.longitude))
 
                 }
 
@@ -62,8 +67,8 @@ class GpsService : IntentService("GpsService") {
 
         MapsActivity.mLocationClient = LocationServices.getFusedLocationProviderClient(this)
         MapsActivity.mLocationRequest = LocationRequest()
-        MapsActivity.mLocationRequest.interval = 1000
-        MapsActivity.mLocationRequest.fastestInterval = 500
+        MapsActivity.mLocationRequest.interval = 10000
+        MapsActivity.mLocationRequest.fastestInterval = 5000
         MapsActivity.mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
         LocationSettingsRequest.Builder().addLocationRequest(MapsActivity.mLocationRequest)
