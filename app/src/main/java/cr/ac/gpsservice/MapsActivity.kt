@@ -77,6 +77,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     fun definePoligono(googleMap: GoogleMap) {
         val geoJsonData =
             JSONObject(
+                // Coordenadas Mexico
                 "{\n" +
                     "  \"type\": \"FeatureCollection\",\n" +
                     "  \"features\": [\n" +
